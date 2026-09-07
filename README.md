@@ -163,7 +163,10 @@ Kafka retains 24 hours of history; evidence grows with event count. The verifier
 ```bash
 ./scripts/cleanup.sh             # remove workloads, retain logs/evidence
 ./scripts/cleanup.sh --cluster   # delete the dedicated cluster and its local data
+./scripts/reset-demo.sh          # delete and rebuild the complete local demo from scratch
 ```
+
+`reset-demo.sh` is the presenter reset: it deletes only the named local k3d cluster, then recreates Kubernetes, operators, Kafka, images and demo workloads. All Kafka records, checkpoints, verifier evidence and pods are new, so k9s begins with zero pod restarts. It does not target an existing remote Kubernetes cluster.
 
 ## Terminal observability with k9s
 

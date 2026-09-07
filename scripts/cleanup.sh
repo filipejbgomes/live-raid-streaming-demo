@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 source "$(dirname "$0")/lib.sh"
-use_cluster
 if [[ "${1:-}" == --cluster ]]; then
-  [[ "${KUBE_CONTEXT:-$(kubectl config current-context)}" == "k3d-$CLUSTER" ]] || { echo "--cluster only supports the matching local k3d cluster" >&2; exit 1; }
-  k3d cluster delete "$CLUSTER"; exit
+  if k3d cluster list -o json | python3 -c 'import json,sys;sys.exit(not any(c["name"]==sys.argv[1] for c in json.load(sys.stdin)))' "$CLUSTER"; then
+    k3d cluster delete "$CLUSTER"
+  fi
+  rm -f "$ROOT/.runtime/kubeconfig" "$ROOT/.runtime/local-cluster.env"
+  exit
 fi
+use_cluster
 kubectl -n demo delete deployment player-generator --ignore-not-found
 kubectl -n flink delete flinkdeployment raid-score-engine --ignore-not-found
 kubectl -n demo delete deployment raid-verifier raid-dashboard --ignore-not-found

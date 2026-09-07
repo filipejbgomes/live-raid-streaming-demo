@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 source "$(dirname "$0")/lib.sh"
-use_cluster
-kubectl -n demo scale deployment/player-generator --replicas=0
-kubectl -n demo wait pod -l app=player-generator --for=delete --timeout=120s
-kubectl -n demo scale deployment/raid-verifier --replicas=0
-kubectl -n demo wait pod -l app=raid-verifier --for=delete --timeout=120s
-# Delete only verifier evidence so it is reconstructed from all three durable logs.
-kubectl -n demo run reset-verifier --image=python:3.12-slim --restart=Never --overrides='{"spec":{"containers":[{"name":"reset-verifier","image":"python:3.12-slim","command":["python","-c","import glob,os; [os.remove(p) for p in glob.glob(\"/data/proof.db*\")]"],"volumeMounts":[{"name":"data","mountPath":"/data"}]}],"volumes":[{"name":"data","persistentVolumeClaim":{"claimName":"verifier-data"}}]}}'
-kubectl -n demo wait pod/reset-verifier --for=jsonpath='{.status.phase}'=Succeeded --timeout=120s
-kubectl -n demo delete pod reset-verifier
-kubectl -n demo scale deployment/raid-verifier --replicas=1
-kubectl -n demo rollout status deployment/raid-verifier --timeout=180s
-echo 'Evidence replay started; generators remain stopped. Full history must still be within Kafka retention.'
+echo "Resetting the entire $CLUSTER demo cluster. Kafka logs, verifier evidence, checkpoints, pods and restart history will be deleted."
+if k3d cluster list -o json | python3 -c 'import json,sys;sys.exit(not any(c["name"]==sys.argv[1] for c in json.load(sys.stdin)))' "$CLUSTER"; then
+  k3d cluster delete "$CLUSTER"
+fi
+rm -f "$ROOT/.runtime/kubeconfig" "$ROOT/.runtime/local-cluster.env"
+unset KUBECONFIG KUBE_CONTEXT
+"$ROOT/scripts/01-create-cluster.sh"
+"$ROOT/scripts/02-install-operators.sh"
+"$ROOT/scripts/03-deploy-kafka.sh"
+"$ROOT/scripts/04-build-images.sh"
+"$ROOT/scripts/05-deploy-demo.sh"
+echo "Fresh demo is ready. Run ./scripts/open-dashboard.sh and open http://localhost:${DASHBOARD_PORT:-18080}. All pods are newly created, so k9s restart counts begin at zero."
