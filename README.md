@@ -33,6 +33,8 @@ Version: **0.1**. Local K3s validation **passed with 552,902 matching attacks, z
 
 Install [Docker Engine](https://docs.docker.com/engine/install/), [kubectl](https://kubernetes.io/docs/tasks/tools/), [Helm](https://helm.sh/docs/intro/install/), [k3d](https://k3d.io/stable/#installation), Python 3 and curl. Docker must be running and accessible to your user. No local Java, Maven, Node or Python packages are needed to run the demo; builds happen in containers.
 
+`k3d` is the client program that creates and manages K3s containers; a running `k3d-*` Docker container does not install that program on your shell `PATH`. On the first local run, `00-check-prereqs.sh` downloads the pinned v5.8.3 binary to ignored `.tools/k3d/k3d`, verifies the upstream release checksum, and later scripts use it automatically. Install it separately with `./scripts/install-k3d.sh`. The scripts resolve `K3D_BIN`, then `.tools/k3d/k3d`, then `PATH`, so `export K3D_BIN=/absolute/path/to/k3d` still overrides the project tool.
+
 Recommended laptop: 8 CPU threads, 16 GiB RAM, at least 25 GiB free disk. Allocate Docker at least 10 GiB RAM. Initial image downloads need internet and can take several minutes. The default single K3s node is capped at 10 GiB; override with `CLUSTER_MEMORY=12g ./scripts/01-create-cluster.sh`. On smaller machines use `HIGH_REPLICAS=4 ./scripts/phase-2-scale-load.sh`. A full run should take 10–20 minutes after installation; stop load after presenting to avoid filling local volumes.
 
 Pinned components: K3s v1.31.6, Strimzi 0.46.0 / Apache Kafka 4.0.0 (KRaft), Apache Flink Kubernetes Operator 1.11.0, Flink 1.20.1 / Kafka connector 3.3.0-1.20, kafka-python 2.3.0, Python 3.12. These are a reproducible demo baseline, not a claim to use the newest releases.

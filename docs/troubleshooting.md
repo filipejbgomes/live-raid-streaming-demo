@@ -2,7 +2,7 @@
 
 ## Missing tools or Docker access
 
-Run `./scripts/00-check-prereqs.sh` and follow the installation links in README. Ensure Docker is running and your account has access. A missing k3d executable prevents cluster creation. Image build or Helm download failures require outbound internet; repeat the failed step after fixing connectivity.
+Run `./scripts/00-check-prereqs.sh`. On its first local run it installs a verified, pinned k3d executable in `.tools/k3d/k3d`; use `./scripts/install-k3d.sh` to repeat that step or set `K3D_BIN` to a system installation. Ensure Docker is running and your account has access. A running `k3d-*` Docker container alone does not supply the k3d client program. Image build or Helm download failures require outbound internet; repeat the failed step after fixing connectivity.
 
 ## Pending pods or restarts
 

@@ -2,6 +2,22 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CLUSTER="${CLUSTER:-live-raid}"
+K3D_LOCAL_BIN="$ROOT/.tools/k3d/k3d"
+
+k3d_bin() {
+  if [[ -n "${K3D_BIN:-}" && -x "$K3D_BIN" ]]; then printf '%s\n' "$K3D_BIN"; return; fi
+  if [[ -x "$K3D_LOCAL_BIN" ]]; then printf '%s\n' "$K3D_LOCAL_BIN"; return; fi
+  type -P k3d || return 1
+}
+
+k3d() {
+  local bin
+  bin=$(k3d_bin) || {
+    echo "k3d CLI is not installed. Install it or set K3D_BIN to its executable path." >&2
+    return 127
+  }
+  command "$bin" "$@"
+}
 LOCAL_ENV="$ROOT/.runtime/local-cluster.env"
 # Local setup writes this ignored file. Explicit environment values always win,
 # so remote deployments never accidentally select the local cluster.
