@@ -1,0 +1,5 @@
+aliases:
+  raidjobs: flink.apache.org/v1beta1/flinkdeployments
+  raidkafka: kafka.strimzi.io/v1beta2/kafkas
+  raidtopics: kafka.strimzi.io/v1beta2/kafkatopics
+  raidcerts: cert-manager.io/v1/certificates

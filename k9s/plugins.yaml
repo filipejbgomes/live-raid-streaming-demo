@@ -1,0 +1,56 @@
+plugins:
+  raid-proof:
+    shortCut: F6
+    description: Raid verifier live evidence
+    scopes:
+    - all
+    command: kubectl
+    background: false
+    args:
+    - --context
+    - $CONTEXT
+    - -n
+    - demo
+    - exec
+    - deployment/raid-verifier
+    - --
+    - python
+    - -c
+    - import json,urllib.request; print(json.dumps(json.load(urllib.request.urlopen('http://localhost:8080/metrics-json')),indent=2))
+  raid-checkpoints:
+    shortCut: F7
+    description: Flink checkpoints and savepoints
+    scopes:
+    - all
+    command: kubectl
+    background: false
+    args:
+    - --context
+    - $CONTEXT
+    - -n
+    - demo
+    - exec
+    - deployment/raid-verifier
+    - --
+    - python
+    - -c
+    - import json,urllib.request; root='http://raid-score-engine-rest.flink:8081';
+      get=lambda p:json.load(urllib.request.urlopen(root+p)); jobs=get('/jobs/overview')['jobs'];
+      print(json.dumps(get('/jobs/'+jobs[0]['jid']+'/checkpoints') if jobs else {'error':'No
+      running job'},indent=2))
+  raid-tls:
+    shortCut: F8
+    description: Certificate renewal and challenge status
+    scopes:
+    - all
+    command: kubectl
+    background: false
+    args:
+    - --context
+    - $CONTEXT
+    - -n
+    - demo
+    - get
+    - certificate,certificaterequest,issuer,order,challenge
+    - -o
+    - wide

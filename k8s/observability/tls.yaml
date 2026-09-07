@@ -1,0 +1,31 @@
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: __ISSUER__
+  namespace: demo
+spec:
+  acme:
+    email: __EMAIL__
+    server: __ACME_SERVER__
+    privateKeySecretRef:
+      name: __ACCOUNT_SECRET__
+    solvers:
+    - http01:
+        ingress:
+          ingressClassName: __INGRESS_CLASS__
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: raid-dashboard
+  namespace: demo
+spec:
+  secretName: __TLS_SECRET__
+  dnsNames:
+  - __HOST__
+  issuerRef:
+    name: __ISSUER__
+    kind: Issuer
+  privateKey:
+    rotationPolicy: Always
+  renewBefore: 360h

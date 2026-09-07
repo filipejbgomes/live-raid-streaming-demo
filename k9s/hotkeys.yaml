@@ -1,0 +1,37 @@
+hotKeys:
+  shift-1:
+    shortCut: Shift-1
+    description: Demo pods
+    command: pods demo
+  shift-2:
+    shortCut: Shift-2
+    description: Flink workers and operator
+    command: pods flink
+  shift-3:
+    shortCut: Shift-3
+    description: Kafka broker and operator
+    command: pods kafka
+  shift-4:
+    shortCut: Shift-4
+    description: Flink deployments
+    command: flinkdeployments flink
+  shift-5:
+    shortCut: Shift-5
+    description: Kafka topics
+    command: kafkatopics kafka
+  shift-6:
+    shortCut: Shift-6
+    description: TLS certificates
+    command: certificates demo
+  shift-7:
+    shortCut: Shift-7
+    description: Ingress and certificate controllers
+    command: pods observability
+  shift-8:
+    shortCut: Shift-8
+    description: All namespace events
+    command: events all
+  shift-9:
+    shortCut: Shift-9
+    description: Node resource usage
+    command: nodes

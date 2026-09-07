@@ -1,0 +1,57 @@
+apiVersion: flink.apache.org/v1beta1
+kind: FlinkDeployment
+metadata:
+  name: raid-score-engine
+  namespace: flink
+spec:
+  image: raid-score-engine-v1:local
+  imagePullPolicy: IfNotPresent
+  flinkVersion: v1_20
+  serviceAccount: raid-flink
+  flinkConfiguration:
+    taskmanager.numberOfTaskSlots: '2'
+    state.checkpoints.dir: s3://flink/checkpoints
+    state.savepoints.dir: s3://flink/savepoints
+    high-availability.type: kubernetes
+    high-availability.storageDir: s3://flink/ha
+    execution.checkpointing.interval: 5s
+    execution.checkpointing.timeout: 2min
+    execution.checkpointing.externalized-checkpoint-retention: RETAIN_ON_CANCELLATION
+    restart-strategy.type: fixed-delay
+    restart-strategy.fixed-delay.attempts: '20'
+    restart-strategy.fixed-delay.delay: 5s
+    kubernetes.operator.job.upgrade.last-state-fallback.enabled: 'false'
+    s3.endpoint: http://minio.flink:9000
+    s3.path.style.access: 'true'
+    s3.connection.ssl.enabled: 'false'
+    s3.aws.credentials.provider: com.amazonaws.auth.EnvironmentVariableCredentialsProvider
+  jobManager:
+    resource:
+      memory: 1024m
+      cpu: 0.5
+  taskManager:
+    resource:
+      memory: 1536m
+      cpu: 1
+  podTemplate:
+    spec:
+      containers:
+      - name: flink-main-container
+        env:
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: raid-object-storage
+              key: access-key
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: raid-object-storage
+              key: secret-key
+      imagePullSecrets: []
+  job:
+    jarURI: local:///opt/flink/usrlib/raid.jar
+    entryClass: demo.RaidJob
+    parallelism: 4
+    upgradeMode: savepoint
+    state: running

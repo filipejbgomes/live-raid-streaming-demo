@@ -1,0 +1,25 @@
+k9s:
+  refreshRate: 2
+  liveViewAutoRefresh: true
+  apiServerTimeout: 15s
+  readOnly: true
+  defaultView: pods
+  skipLatestRevCheck: true
+  ui:
+    enableMouse: false
+    logoless: true
+    headless: false
+    noIcons: true
+  logger:
+    tail: 200
+    buffer: 5000
+    sinceSeconds: 300
+    textWrap: true
+    showTime: true
+  thresholds:
+    cpu:
+      warn: 70
+      critical: 90
+    memory:
+      warn: 70
+      critical: 90

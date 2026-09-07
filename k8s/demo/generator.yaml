@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: player-generator
+  namespace: demo
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: player-generator
+  template:
+    metadata:
+      labels:
+        app: player-generator
+    spec:
+      terminationGracePeriodSeconds: 60
+      containers:
+      - name: player-generator
+        image: player-generator:local
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            memory: 256Mi
+        env:
+        - name: PLAYERS
+          value: '500'
+        - name: RATE
+          value: '500'
+      imagePullSecrets: []

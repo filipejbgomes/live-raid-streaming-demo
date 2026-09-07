@@ -1,0 +1,29 @@
+{
+  "version": "0.1",
+  "validationDate": "2026-09-07",
+  "environment": "K3s v1.31.6+k3s1 via k3d v5.8.3",
+  "note": "Recorded validation evidence, not a substitute for running phase 5 on your own cluster.",
+  "versions": {
+    "v1": 416806,
+    "v2": 136096
+  },
+  "playersAcrossBothVersions": 2087,
+  "proof": {
+    "expectedAttacks": 552902,
+    "uniqueProcessedAttacks": 552902,
+    "integrityEvents": 552902,
+    "duplicateAttacks": 0,
+    "missingAttacks": 0,
+    "missingSequences": 0,
+    "invalidSequences": 0,
+    "mismatches": 0,
+    "playerStateErrors": 0,
+    "globalStateMatch": true,
+    "integrityErrors": 0,
+    "checksum": "OK",
+    "kafkaLag": 0,
+    "consumerLag": 0,
+    "version": "v2",
+    "proofPass": true
+  }
+}

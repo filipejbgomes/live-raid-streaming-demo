@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: raid-dashboard
+  namespace: demo
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: raid-dashboard
+  template:
+    metadata:
+      labels:
+        app: raid-dashboard
+    spec:
+      terminationGracePeriodSeconds: 60
+      containers:
+      - name: raid-dashboard
+        image: raid-dashboard:local
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            memory: 256Mi
+        ports:
+        - containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      imagePullSecrets: []
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: raid-dashboard
+  namespace: demo
+spec:
+  selector:
+    app: raid-dashboard
+  ports:
+  - port: 8080
+    targetPort: 8080

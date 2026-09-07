@@ -1,0 +1,7 @@
+**/__pycache__/
+**/target/
+.venv/
+reports/
+*.db
+.tools/
+.runtime/
