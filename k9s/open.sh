@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+source "$ROOT/scripts/lib.sh"
 bin="${K9S_BIN:-$ROOT/.tools/k9s}"
 if [[ ! -x "$bin" ]]; then
   if command -v k9s >/dev/null; then bin=$(command -v k9s); else echo 'Install first: ./k9s/install.sh' >&2; exit 1; fi

@@ -2,6 +2,13 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CLUSTER="${CLUSTER:-live-raid}"
+LOCAL_ENV="$ROOT/.runtime/local-cluster.env"
+# Local setup writes this ignored file. Explicit environment values always win,
+# so remote deployments never accidentally select the local cluster.
+if [[ -z "${KUBECONFIG:-}" && -z "${KUBE_CONTEXT:-}" && -r "$LOCAL_ENV" ]]; then
+  # shellcheck disable=SC1090
+  source "$LOCAL_ENV"
+fi
 export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
 trap 'echo "ERROR at line $LINENO: $BASH_COMMAND" >&2' ERR
 # Optional explicit context is passed per command; never change the user's global context.
@@ -10,8 +17,16 @@ if [[ -n "${KUBE_CONTEXT:-}" ]]; then
   helm() { command helm --kube-context "$KUBE_CONTEXT" "$@"; }
 fi
 use_cluster() {
-  echo "Target Kubernetes context: ${KUBE_CONTEXT:-$(kubectl config current-context)}"
-  kubectl cluster-info >/dev/null
+  local context="${KUBE_CONTEXT:-$(kubectl config current-context 2>/dev/null || true)}"
+  [[ -n "$context" ]] || {
+    echo "No Kubernetes context is configured. Run ./scripts/01-create-cluster.sh for local K3s, or export KUBECONFIG and KUBE_CONTEXT for an existing cluster." >&2
+    return 1
+  }
+  echo "Target Kubernetes context: $context"
+  kubectl cluster-info >/dev/null 2>&1 || {
+    echo "Cannot reach Kubernetes context '$context'. For local K3s, run ./scripts/01-create-cluster.sh once to regenerate .runtime/kubeconfig; for another cluster, export its KUBECONFIG and KUBE_CONTEXT." >&2
+    return 1
+  }
 }
 apply_manifest() { python3 "$ROOT/scripts/render.py" "$@" | kubectl apply -f -; }
 image_ref() { printf '%s%s:%s' "${IMAGE_REGISTRY:+${IMAGE_REGISTRY%/}/}" "$1" "${IMAGE_TAG:-local}"; }

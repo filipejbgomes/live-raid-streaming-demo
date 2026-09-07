@@ -21,6 +21,8 @@ KUBECONFIG=/tmp/raid-kubeconfig KUBE_CONTEXT=k3d-live-raid ./scripts/open-dashbo
 
 The dashboard is a running Kubernetes application, not a GitHub Pages site. Remote browser access uses the HTTPS deployment instructions below. Its page source is [`apps/raid-dashboard/index.html`](apps/raid-dashboard/index.html).
 
+After `./scripts/01-create-cluster.sh`, all demo scripts automatically load the generated `.runtime/kubeconfig` and `k3d-live-raid` context. Explicit `KUBECONFIG` or `KUBE_CONTEXT` values always take precedence for existing Kubernetes clusters.
+
 This is a purpose-built audience dashboard: a live pipeline diagram, five selectable presentation phases, throughput trend, boss HP, player leaderboard, latency, Kafka lag, Flink workers and the final integrity verdict. Select a phase to display its explanation; execute the corresponding terminal script to change the live workload. Use [k9s](k9s/README.md) beside it to show Kubernetes recovery. No Grafana installation is required.
 
 [View the dashboard screenshot](docs/dashboard.png) captured from the validated local cluster.
