@@ -37,7 +37,7 @@ Install [Docker Engine](https://docs.docker.com/engine/install/), [kubectl](http
 
 Recommended laptop: 8 CPU threads, 16 GiB RAM, at least 25 GiB free disk. Allocate Docker at least 10 GiB RAM. Initial image downloads need internet and can take several minutes. The default single K3s node is capped at 10 GiB; override with `CLUSTER_MEMORY=12g ./scripts/01-create-cluster.sh`. On smaller machines use `HIGH_REPLICAS=4 ./scripts/phase-2-scale-load.sh`. A full run should take 10–20 minutes after installation; stop load after presenting to avoid filling local volumes.
 
-Pinned components: K3s v1.31.6, Strimzi 0.46.0 / Apache Kafka 4.0.0 (KRaft), Apache Flink Kubernetes Operator 1.11.0, Flink 1.20.1 / Kafka connector 3.3.0-1.20, kafka-python 2.3.0, Python 3.12. These are a reproducible demo baseline, not a claim to use the newest releases.
+Pinned components: K3s v1.31.6, Strimzi 0.46.0 / Apache Kafka 4.0.0 (KRaft), Apache Flink Kubernetes Operator 1.11.0, Flink 1.20.1 / Kafka connector 3.3.0-1.20, kafka-python 2.3.0, Python 3.12. Script 02 downloads the Flink operator chart over IPv4, verifies its SHA-512 checksum and stores it under ignored `.cache/live-raid/charts`, avoiding Apache Archive IPv6 routing failures on later runs. These are a reproducible demo baseline, not a claim to use the newest releases.
 
 ## Quickstart
 
@@ -168,6 +168,18 @@ Kafka retains 24 hours of history; evidence grows with event count. The verifier
 ```
 
 `reset-demo.sh` is the presenter reset: it removes and recreates the demo namespaces, operators, Kafka, storage and workloads while retaining the local K3s node and its pulled image cache. Kafka records, checkpoints, verifier evidence and demo pods are new, so the relevant k9s views begin with zero pod restarts. `reset-demo.sh --cluster` additionally recreates the named local K3s node when a full infrastructure wipe is required. Neither mode targets an existing remote Kubernetes cluster.
+
+## Offline presenter reset
+
+Complete the initial deployment while online. From then on, use only:
+
+```bash
+./scripts/reset-demo.sh
+```
+
+This is an idempotent full-demo reset: it deletes the Kafka, Flink, demo and observability namespaces, then recreates operators, Kafka, storage and every workload. It deliberately keeps the `live-raid` K3s node running, so all previously pulled Kubernetes images stay in its containerd cache and Docker keeps the build layers. The operator charts are cached under ignored `.cache/live-raid/charts`. It therefore runs without Internet after the first successful deployment, and the new pods begin with zero restarts in k9s.
+
+Do not use `reset-demo.sh --cluster` for the presentation. That option intentionally deletes the K3s node and therefore discards its image cache; it exists only for a deliberate infrastructure wipe.
 
 ## Terminal observability with k9s
 

@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: raid-dashboard
+  name: bossraid-dashboard
   namespace: demo
 spec:
   ingressClassName: __INGRESS_CLASS__
@@ -17,6 +17,6 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: raid-dashboard
+            name: bossraid-dashboard
             port:
               number: 8080

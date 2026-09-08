@@ -1,27 +1,86 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: bossraid-verifier
+  namespace: demo
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: bossraid-dashboard
+  namespace: demo
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: raid-telemetry
-  namespace: flink
+  name: bossraid-dashboard-control
+  namespace: demo
 rules:
-- apiGroups:
-  - ''
-  resources:
-  - pods
-  verbs:
-  - get
-  - list
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get","patch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: raid-telemetry
-  namespace: flink
+  name: bossraid-dashboard-control
+  namespace: demo
 subjects:
 - kind: ServiceAccount
-  name: raid-verifier
+  name: bossraid-dashboard
   namespace: demo
 roleRef:
   kind: Role
-  name: raid-telemetry
+  name: bossraid-dashboard-control
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: bossraid-telemetry
+  namespace: flink
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get","list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: bossraid-telemetry
+  namespace: flink
+subjects:
+- kind: ServiceAccount
+  name: bossraid-verifier
+  namespace: demo
+roleRef:
+  kind: Role
+  name: bossraid-telemetry
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: bossraid-dashboard-control
+  namespace: flink
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get","list","delete"]
+- apiGroups: ["flink.apache.org"]
+  resources: ["flinkdeployments"]
+  verbs: ["get","patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: bossraid-dashboard-control
+  namespace: flink
+subjects:
+- kind: ServiceAccount
+  name: bossraid-dashboard
+  namespace: demo
+roleRef:
+  kind: Role
+  name: bossraid-dashboard-control
   apiGroup: rbac.authorization.k8s.io

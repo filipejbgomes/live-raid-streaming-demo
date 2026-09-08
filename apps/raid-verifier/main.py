@@ -11,10 +11,10 @@ lock=threading.RLock()
 status={'ready':False,'error':None,'consumerLag':None,'kafkaLag':None,'parallelism':None,'taskManagers':None,'timeline':[],'evidenceRevision':0}
 latencies=deque(maxlen=10000); arrivals=deque(); active={}
 cached=proof.report();cached_revision=-1;cached_at=0
-TOPICS=['raid-attacks','raid-score-updates','raid-integrity']
+TOPICS=['bossraid-attacks','bossraid-score-updates','bossraid-integrity']
 def consume():
     try:
-        c=KafkaConsumer(bootstrap_servers=os.getenv('BOOTSTRAP','raid-kafka-bootstrap.kafka:9092'),
+        c=KafkaConsumer(bootstrap_servers=os.getenv('BOOTSTRAP','bossraid-kafka-bootstrap.kafka:9092'),
             enable_auto_commit=False,isolation_level='read_committed',auto_offset_reset='earliest',
             value_deserializer=lambda b:json.loads(b),request_timeout_ms=40000)
         parts=[]
@@ -48,7 +48,7 @@ def consume():
                 for tp,records in batch.items():
                     for r in records:
                         proof.ingest(tp.topic,tp.partition,r.offset,r.value)
-                        if tp.topic=='raid-score-updates':
+                        if tp.topic=='bossraid-score-updates':
                             now=time.time();latencies.append(max(0,now*1000-r.value['createdAtEpochMs']))
                             arrivals.append(now);active[r.value['playerId']]=now
                 proof.db.commit()
@@ -73,14 +73,14 @@ def telemetry():
     while True:
         state={}
         try:
-            root='http://raid-score-engine-rest.flink:8081'
+            root='http://bossraid-score-engine-rest.flink:8081'
             jobs=fetch(root+'/jobs/overview')['jobs']
             job=jobs[0] if jobs else {}
             details=fetch(root+'/jobs/'+job['jid']) if job else {}
             state.update(parallelism=max((v['parallelism'] for v in details.get('vertices',[])),default=0),flinkState=job.get('state','UNKNOWN'))
             token=open('/var/run/secrets/kubernetes.io/serviceaccount/token').read()
             ctx=ssl.create_default_context(cafile='/var/run/secrets/kubernetes.io/serviceaccount/ca.crt')
-            pods=fetch('https://kubernetes.default.svc/api/v1/namespaces/flink/pods?labelSelector=app%3Draid-score-engine%2Ccomponent%3Dtaskmanager',{'Authorization':'Bearer '+token},ctx)['items']
+            pods=fetch('https://kubernetes.default.svc/api/v1/namespaces/flink/pods?labelSelector=app%3Dbossraid-score-engine%2Ccomponent%3Dtaskmanager',{'Authorization':'Bearer '+token},ctx)['items']
             state['taskManagers']=sum(any(c.get('type')=='Ready' and c.get('status')=='True' for c in p.get('status',{}).get('conditions',[])) for p in pods)
             signature=(state['flinkState'],tuple(sorted(p['metadata']['uid'] for p in pods)))
             if signature!=previous:
@@ -89,8 +89,8 @@ def telemetry():
                     status['timeline']=status['timeline'][-30:]
                 previous=signature
             # Committed Flink source offsets are checkpoint based.
-            c=KafkaConsumer(bootstrap_servers=os.getenv('BOOTSTRAP','raid-kafka-bootstrap.kafka:9092'),group_id='raid-score-engine',enable_auto_commit=False)
-            ps=[TopicPartition('raid-attacks',p) for p in c.partitions_for_topic('raid-attacks')]
+            c=KafkaConsumer(bootstrap_servers=os.getenv('BOOTSTRAP','bossraid-kafka-bootstrap.kafka:9092'),group_id='bossraid-score-engine',enable_auto_commit=False)
+            ps=[TopicPartition('bossraid-attacks',p) for p in c.partitions_for_topic('bossraid-attacks')]
             ends=c.end_offsets(ps)
             state['kafkaLag']=sum(max(0,ends[p]-(c.committed(p) or 0)) for p in ps)
             c.close()

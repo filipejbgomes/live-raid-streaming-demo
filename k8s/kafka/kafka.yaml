@@ -1,10 +1,10 @@
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaNodePool
 metadata:
-  name: raid
+  name: bossraid
   namespace: kafka
   labels:
-    strimzi.io/cluster: raid
+    strimzi.io/cluster: bossraid
 spec:
   replicas: 1
   roles:
@@ -28,7 +28,7 @@ spec:
 apiVersion: kafka.strimzi.io/v1beta2
 kind: Kafka
 metadata:
-  name: raid
+  name: bossraid
   namespace: kafka
   annotations:
     strimzi.io/kraft: enabled

@@ -2,6 +2,7 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CLUSTER="${CLUSTER:-live-raid}"
+CACHE_DIR="${DEMO_CACHE_DIR:-$ROOT/.cache/live-raid}"
 K3D_LOCAL_BIN="$ROOT/.tools/k3d/k3d"
 
 k3d_bin() {
@@ -17,6 +18,15 @@ k3d() {
     return 127
   }
   command "$bin" "$@"
+}
+step() { printf '\n==> [%s] %s\n' "$1" "$2"; }
+wait_for_empty() {
+  local namespace="$1" resource="$2" label="$3" deadline=$((SECONDS + 300))
+  while kubectl -n "$namespace" get "$resource" --no-headers 2>/dev/null | grep -q .; do
+    (( SECONDS < deadline )) || { echo "Timed out waiting for $label to be deleted." >&2; return 1; }
+    echo "    Waiting for $label to finish deleting..."
+    sleep 5
+  done
 }
 LOCAL_ENV="$ROOT/.runtime/local-cluster.env"
 # Local setup writes this ignored file. A named context is an explicit remote
@@ -50,7 +60,7 @@ image_ref() { printf '%s%s:%s' "${IMAGE_REGISTRY:+${IMAGE_REGISTRY%/}/}" "$1" "$
 pause() { read -r -p "Press Enter to continue..."; }
 wait_job() {
   for ((i=0;i<180;i++)); do
-    if kubectl -n flink get flinkdeployment raid-score-engine -o json 2>/dev/null | python3 -c '
+    if kubectl -n flink get flinkdeployment bossraid-score-engine -o json 2>/dev/null | python3 -c '
 import json,sys
 try:
     d=json.load(sys.stdin); s=d.get("status",{})

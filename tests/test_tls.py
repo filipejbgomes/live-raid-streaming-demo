@@ -7,6 +7,6 @@ class TLSTests(unittest.TestCase):
     def test_production(self):
         r=self.render();self.assertEqual(r.returncode,0);self.assertIn('https://acme-v02.api.letsencrypt.org/directory',r.stdout);self.assertIn('rotationPolicy: Always',r.stdout)
     def test_staging_separate_account(self):self.assertIn('raid-letsencrypt-staging-account',self.render(ACME_ENV='staging').stdout)
-    def test_ingress_uses_tls(self):self.assertIn('secretName: "raid-dashboard-tls"',self.render('ingress').stdout)
+    def test_ingress_uses_tls(self):self.assertIn('secretName: "bossraid-dashboard-tls"',self.render('ingress').stdout)
     def test_invalid_domain_fails(self):self.assertNotEqual(self.render(DASHBOARD_HOST='https://bad/path').returncode,0)
     def test_no_email_fails(self):self.assertNotEqual(self.render(ACME_EMAIL='').returncode,0)

@@ -1,10 +1,10 @@
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
-  name: raid-attacks
+  name: bossraid-attacks
   namespace: kafka
   labels:
-    strimzi.io/cluster: raid
+    strimzi.io/cluster: bossraid
 spec:
   partitions: 24
   replicas: 1
@@ -15,10 +15,10 @@ spec:
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
-  name: raid-score-updates
+  name: bossraid-score-updates
   namespace: kafka
   labels:
-    strimzi.io/cluster: raid
+    strimzi.io/cluster: bossraid
 spec:
   partitions: 24
   replicas: 1
@@ -29,10 +29,10 @@ spec:
 apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaTopic
 metadata:
-  name: raid-integrity
+  name: bossraid-integrity
   namespace: kafka
   labels:
-    strimzi.io/cluster: raid
+    strimzi.io/cluster: bossraid
 spec:
   partitions: 24
   replicas: 1

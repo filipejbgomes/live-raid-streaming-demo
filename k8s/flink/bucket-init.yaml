@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: raid-bucket-init
+  name: bossraid-bucket-init
   namespace: flink
 spec:
   backoffLimit: 5
@@ -15,15 +15,15 @@ spec:
         - name: MINIO_ROOT_USER
           valueFrom:
             secretKeyRef:
-              name: raid-object-storage
+              name: bossraid-object-storage
               key: access-key
         - name: MINIO_ROOT_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: raid-object-storage
+              name: bossraid-object-storage
               key: secret-key
         command:
         - /bin/sh
         - -ec
-        - mc alias set raid http://minio:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD";
-          mc mb --ignore-existing raid/flink
+        - mc alias set bossraid http://minio:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD";
+          mc mb --ignore-existing bossraid/flink

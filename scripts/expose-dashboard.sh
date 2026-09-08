@@ -10,7 +10,7 @@ if [[ "$mode" != ingress && "$mode" != loadbalancer ]]; then
   echo 'Usage: expose-dashboard.sh [port-forward|ingress|loadbalancer]' >&2; exit 1
 fi
 : "${DASHBOARD_HOST:?Set DASHBOARD_HOST to your public dashboard DNS name}"
-export TLS_SECRET="${TLS_SECRET:-raid-dashboard-tls}"
+export TLS_SECRET="${TLS_SECRET:-bossraid-dashboard-tls}"
 if [[ "$mode" == loadbalancer ]]; then
   # The public LoadBalancer belongs to the TLS-terminating ingress controller.
   export INGRESS_CLASS=raid-traefik
@@ -31,14 +31,14 @@ else
   echo 'TLS_MODE must be letsencrypt or existing' >&2; exit 1
 fi
 # Keep direct app service internal; the ingress controller terminates TLS.
-kubectl -n demo patch service raid-dashboard --type=merge -p '{"spec":{"type":"ClusterIP"}}'
-kubectl -n demo set env deployment/raid-dashboard DASHBOARD_HOST="$DASHBOARD_HOST"
-kubectl -n demo rollout status deployment/raid-dashboard --timeout=180s
+kubectl -n demo patch service bossraid-dashboard --type=merge -p '{"spec":{"type":"ClusterIP"}}'
+kubectl -n demo set env deployment/bossraid-dashboard DASHBOARD_HOST="$DASHBOARD_HOST"
+kubectl -n demo rollout status deployment/bossraid-dashboard --timeout=180s
 python3 "$ROOT/scripts/tls-resources.py" ingress | kubectl apply -f -
 if [[ "${TLS_MODE:-letsencrypt}" == letsencrypt ]]; then
-  generation=$(kubectl -n demo get certificate raid-dashboard -o jsonpath='{.metadata.generation}')
-  kubectl -n demo wait certificate/raid-dashboard --for=jsonpath='{.status.conditions[?(@.type=="Ready")].observedGeneration}'="$generation" --timeout="${CERT_TIMEOUT:-600s}"
-  kubectl -n demo wait certificate/raid-dashboard --for=condition=Ready --timeout="${CERT_TIMEOUT:-600s}"
+  generation=$(kubectl -n demo get certificate bossraid-dashboard -o jsonpath='{.metadata.generation}')
+  kubectl -n demo wait certificate/bossraid-dashboard --for=jsonpath='{.status.conditions[?(@.type=="Ready")].observedGeneration}'="$generation" --timeout="${CERT_TIMEOUT:-600s}"
+  kubectl -n demo wait certificate/bossraid-dashboard --for=condition=Ready --timeout="${CERT_TIMEOUT:-600s}"
 fi
 echo "Dashboard: https://$DASHBOARD_HOST"
 if [[ "${ACME_ENV:-production}" == staging && "${TLS_MODE:-letsencrypt}" == letsencrypt ]]; then

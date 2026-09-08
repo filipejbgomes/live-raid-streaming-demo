@@ -4,7 +4,7 @@ registry=os.getenv('IMAGE_REGISTRY','').rstrip('/')
 tag=os.getenv('IMAGE_TAG','local')
 for arg in sys.argv[1:]:
     data=pathlib.Path(arg).read_text()
-    for app in ('player-generator','raid-verifier','raid-dashboard','raid-score-engine-v1','raid-score-engine-v2'):
+    for app in ('bossraid-player-generator','bossraid-verifier','bossraid-dashboard','bossraid-score-engine-v1','bossraid-score-engine-v2'):
         data=data.replace(app+':local',(registry+'/' if registry else '')+app+':'+tag)
     storage=os.getenv('STORAGE_CLASS','')
     lines=[]

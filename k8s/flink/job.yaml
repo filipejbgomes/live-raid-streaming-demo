@@ -1,13 +1,13 @@
 apiVersion: flink.apache.org/v1beta1
 kind: FlinkDeployment
 metadata:
-  name: raid-score-engine
+  name: bossraid-score-engine
   namespace: flink
 spec:
-  image: raid-score-engine-v1:local
+  image: bossraid-score-engine-v1:local
   imagePullPolicy: IfNotPresent
   flinkVersion: v1_20
-  serviceAccount: raid-flink
+  serviceAccount: bossraid-flink
   flinkConfiguration:
     taskmanager.numberOfTaskSlots: '2'
     state.checkpoints.dir: s3://flink/checkpoints
@@ -41,16 +41,16 @@ spec:
         - name: AWS_ACCESS_KEY_ID
           valueFrom:
             secretKeyRef:
-              name: raid-object-storage
+              name: bossraid-object-storage
               key: access-key
         - name: AWS_SECRET_ACCESS_KEY
           valueFrom:
             secretKeyRef:
-              name: raid-object-storage
+              name: bossraid-object-storage
               key: secret-key
       imagePullSecrets: []
   job:
-    jarURI: local:///opt/flink/usrlib/raid.jar
+    jarURI: local:///opt/flink/usrlib/bossraid.jar
     entryClass: demo.RaidJob
     parallelism: 4
     upgradeMode: savepoint

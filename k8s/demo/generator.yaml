@@ -1,24 +1,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: player-generator
+  name: bossraid-player-generator
   namespace: demo
 spec:
-  replicas: 1
+  replicas: 0
   strategy:
     type: RollingUpdate
   selector:
     matchLabels:
-      app: player-generator
+      app: bossraid-player-generator
   template:
     metadata:
       labels:
-        app: player-generator
+        app: bossraid-player-generator
     spec:
       terminationGracePeriodSeconds: 60
       containers:
-      - name: player-generator
-        image: player-generator:local
+      - name: bossraid-player-generator
+        image: bossraid-player-generator:local
         imagePullPolicy: IfNotPresent
         resources:
           requests:

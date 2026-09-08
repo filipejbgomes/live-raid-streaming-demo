@@ -4,10 +4,15 @@ mode="${1:-local}"
 if [[ "$mode" != local && "$mode" != push ]]; then echo 'Usage: 04-build-images.sh [local|push]' >&2; exit 1; fi
 if [[ "$mode" == push ]]; then : "${IMAGE_REGISTRY:?Set IMAGE_REGISTRY to your writable registry/repository prefix}"; fi
 images=()
-for app in player-generator raid-verifier raid-dashboard raid-score-engine-v1 raid-score-engine-v2; do
+step 'images 1/2' "Building five application images (${mode})"
+for app in bossraid-player-generator bossraid-verifier bossraid-dashboard bossraid-score-engine-v1 bossraid-score-engine-v2; do
   ref=$(image_ref "$app");images+=("$ref")
-  context="$ROOT/apps/$app";dockerfile="$context/Dockerfile"
-  if [[ "$app" == raid-score-engine-* ]]; then context="$ROOT/apps/raid-score-engine";dockerfile="$context/${app##*-}/Dockerfile"; fi
+  case "$app" in
+    bossraid-player-generator) context="$ROOT/apps/player-generator";dockerfile="$context/Dockerfile";;
+    bossraid-verifier) context="$ROOT/apps/raid-verifier";dockerfile="$context/Dockerfile";;
+    bossraid-dashboard) context="$ROOT/apps/raid-dashboard";dockerfile="$context/Dockerfile";;
+    bossraid-score-engine-*) context="$ROOT/apps/raid-score-engine";dockerfile="$context/${app##*-}/Dockerfile";;
+  esac
   if [[ "$mode" == push && -n "${PLATFORMS:-}" ]]; then
     docker buildx build --platform "$PLATFORMS" -t "$ref" -f "$dockerfile" --push "$context"
   else
@@ -15,4 +20,7 @@ for app in player-generator raid-verifier raid-dashboard raid-score-engine-v1 ra
     if [[ "$mode" == push ]]; then docker push "$ref"; fi
   fi
 done
-if [[ "$mode" == local ]]; then k3d image import -c "$CLUSTER" "${images[@]}"; fi
+if [[ "$mode" == local ]]; then
+  step 'images 2/2' 'Importing application images into the K3s node'
+  k3d image import -c "$CLUSTER" "${images[@]}"
+fi

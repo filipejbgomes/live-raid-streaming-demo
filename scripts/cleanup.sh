@@ -8,11 +8,11 @@ if [[ "${1:-}" == --cluster ]]; then
   exit
 fi
 use_cluster
-kubectl -n demo delete deployment player-generator --ignore-not-found
-kubectl -n flink delete flinkdeployment raid-score-engine --ignore-not-found
-kubectl -n demo delete deployment raid-verifier raid-dashboard --ignore-not-found
-kubectl -n demo delete service raid-verifier raid-dashboard --ignore-not-found
+kubectl -n demo delete deployment bossraid-player-generator --ignore-not-found
+kubectl -n flink delete flinkdeployment bossraid-score-engine --ignore-not-found
+kubectl -n demo delete deployment bossraid-verifier bossraid-dashboard --ignore-not-found
+kubectl -n demo delete service bossraid-verifier bossraid-dashboard --ignore-not-found
 echo 'Workloads deleted; Kafka and evidence volumes retained. Use cleanup.sh --cluster for a fresh raid.'
-kubectl -n demo delete ingress raid-dashboard --ignore-not-found
-kubectl -n demo delete certificate raid-dashboard --ignore-not-found 2>/dev/null || true
+kubectl -n demo delete ingress bossraid-dashboard --ignore-not-found
+kubectl -n demo delete certificate bossraid-dashboard --ignore-not-found 2>/dev/null || true
 echo "Shared operators, ingress controller, certificates secrets and ACME accounts are retained."

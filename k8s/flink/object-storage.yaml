@@ -38,12 +38,12 @@ spec:
         - name: MINIO_ROOT_USER
           valueFrom:
             secretKeyRef:
-              name: raid-object-storage
+              name: bossraid-object-storage
               key: access-key
         - name: MINIO_ROOT_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: raid-object-storage
+              name: bossraid-object-storage
               key: secret-key
         ports:
         - containerPort: 9000

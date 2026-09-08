@@ -1,7 +1,7 @@
 plugins:
-  raid-proof:
+  bossraid-proof:
     shortCut: F6
-    description: Raid verifier live evidence
+    description: Bossraid verifier live evidence
     scopes:
     - all
     command: kubectl
@@ -12,12 +12,12 @@ plugins:
     - -n
     - demo
     - exec
-    - deployment/raid-verifier
+    - deployment/bossraid-verifier
     - --
     - python
     - -c
     - import json,urllib.request; print(json.dumps(json.load(urllib.request.urlopen('http://localhost:8080/metrics-json')),indent=2))
-  raid-checkpoints:
+  bossraid-checkpoints:
     shortCut: F7
     description: Flink checkpoints and savepoints
     scopes:
@@ -30,15 +30,15 @@ plugins:
     - -n
     - demo
     - exec
-    - deployment/raid-verifier
+    - deployment/bossraid-verifier
     - --
     - python
     - -c
-    - import json,urllib.request; root='http://raid-score-engine-rest.flink:8081';
+    - import json,urllib.request; root='http://bossraid-score-engine-rest.flink:8081';
       get=lambda p:json.load(urllib.request.urlopen(root+p)); jobs=get('/jobs/overview')['jobs'];
       print(json.dumps(get('/jobs/'+jobs[0]['jid']+'/checkpoints') if jobs else {'error':'No
       running job'},indent=2))
-  raid-tls:
+  bossraid-tls:
     shortCut: F8
     description: Certificate renewal and challenge status
     scopes:

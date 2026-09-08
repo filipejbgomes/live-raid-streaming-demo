@@ -63,19 +63,19 @@ public class RaidJob {
     }
     public static void main(String[] args) throws Exception {
         String version=System.getenv().getOrDefault("JOB_VERSION","v1");
-        String brokers=System.getenv().getOrDefault("BOOTSTRAP","raid-kafka-bootstrap.kafka:9092");
+        String brokers=System.getenv().getOrDefault("BOOTSTRAP","bossraid-kafka-bootstrap.kafka:9092");
         StreamExecutionEnvironment env=StreamExecutionEnvironment.getExecutionEnvironment();
         env.enableCheckpointing(5000);
         env.getCheckpointConfig().setMaxConcurrentCheckpoints(1);
         env.setMaxParallelism(128);
         KafkaSource<String> source=KafkaSource.<String>builder().setBootstrapServers(brokers)
-            .setTopics("raid-attacks").setGroupId("raid-score-engine")
+            .setTopics("bossraid-attacks").setGroupId("bossraid-score-engine")
             .setStartingOffsets(OffsetsInitializer.earliest()).setProperty("isolation.level","read_committed")
             .setValueOnlyDeserializer(new SimpleStringSchema()).build();
         var scored=env.fromSource(source,WatermarkStrategy.noWatermarks(),"combat-log").uid("combat-log")
             .keyBy(raw->JSON.readTree(raw).get("playerId").asText()).process(new Player(version)).uid("player-state")
-            .keyBy(raw->"boss").process(new Raid()).setParallelism(1).uid("raid-state");
-        for(String topic:new String[]{"raid-score-updates","raid-integrity"}) {
+            .keyBy(raw->"boss").process(new Raid()).setParallelism(1).uid("bossraid-state");
+        for(String topic:new String[]{"bossraid-score-updates","bossraid-integrity"}) {
             scored.sinkTo(KafkaSink.<String>builder().setBootstrapServers(brokers)
                 .setDeliveryGuarantee(DeliveryGuarantee.EXACTLY_ONCE)
                 .setTransactionalIdPrefix(topic+"-txn-")
@@ -86,6 +86,6 @@ public class RaidJob {
                         catch(Exception e){throw new RuntimeException(e);}
                     }).setValueSerializationSchema(new SimpleStringSchema()).build()).build()).uid(topic+"-sink");
         }
-        env.execute("raid-score-engine-"+version);
+        env.execute("bossraid-score-engine-"+version);
     }
 }

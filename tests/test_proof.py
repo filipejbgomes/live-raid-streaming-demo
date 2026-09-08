@@ -7,15 +7,15 @@ class ProofTests(unittest.TestCase):
         applied=10*(2 if version=='v2' and n%10==0 else 1)
         return dict(eventId=f'p:attack-{n:08d}',playerId='p',sequence=n,damage=10,createdAtEpochMs=1,generatorId='g',valid=True,version=version,appliedDamage=applied,totalAttacks=n,totalDamage=n*10+(10 if version=='v2' and n>=10 else 0),invalidSequenceCount=0,bossHp=1000000000-n*10-(10 if version=='v2' and n>=10 else 0),combo=n,lastSequence=n,playerDamage=n*10+(10 if version=='v2' and n>=10 else 0))
     def add(self,e,topics=None):
-        for t in topics or ['raid-attacks','raid-score-updates','raid-integrity']:self.p.ingest(t,0,e['sequence']-1,e)
+        for t in topics or ['bossraid-attacks','bossraid-score-updates','bossraid-integrity']:self.p.ingest(t,0,e['sequence']-1,e)
     def test_empty_never_passes(self):self.assertFalse(self.p.report()['proofPass'])
     def test_matching_passes(self):self.add(self.event());self.assertTrue(self.p.report()['proofPass'])
-    def test_missing_output_fails(self):self.add(self.event(),['raid-attacks']);self.assertEqual(self.p.report()['missingAttacks'],1)
+    def test_missing_output_fails(self):self.add(self.event(),['bossraid-attacks']);self.assertEqual(self.p.report()['missingAttacks'],1)
     def test_duplicate_distinct_offset_fails(self):
-        e=self.event();self.add(e);self.p.ingest('raid-score-updates',0,2,e);self.assertEqual(self.p.report()['duplicateAttacks'],1)
+        e=self.event();self.add(e);self.p.ingest('bossraid-score-updates',0,2,e);self.assertEqual(self.p.report()['duplicateAttacks'],1)
     def test_replayed_offset_is_not_duplicate(self):self.add(self.event());self.add(self.event());self.assertTrue(self.p.report()['proofPass'])
     def test_corrupt_payload_fails(self):
-        e=self.event();self.add(e,['raid-attacks']);e['damage']=20;self.add(e,['raid-score-updates','raid-integrity']);self.assertEqual(self.p.report()['checksum'],'MISMATCH')
+        e=self.event();self.add(e,['bossraid-attacks']);e['damage']=20;self.add(e,['bossraid-score-updates','bossraid-integrity']);self.assertEqual(self.p.report()['checksum'],'MISMATCH')
     def test_sequence_gap_fails(self):self.add(self.event(2));self.assertEqual(self.p.report()['missingSequences'],1);self.assertFalse(self.p.report()['proofPass'])
     def test_upgrade_bonus(self):
         for n in range(1,11):self.add(self.event(n,'v1' if n<10 else 'v2'))
@@ -24,10 +24,10 @@ class ProofTests(unittest.TestCase):
         for n in range(1,10):self.add(self.event(n))
         e=self.event(10,'v2');e['appliedDamage']=10;self.add(e);self.assertFalse(self.p.report()['proofPass'])
     def test_integrity_payload_disagreement_fails(self):
-        e=self.event();self.add(e,['raid-attacks','raid-score-updates']);e['bossHp']=7;self.add(e,['raid-integrity']);self.assertFalse(self.p.report()['proofPass'])
+        e=self.event();self.add(e,['bossraid-attacks','bossraid-score-updates']);e['bossHp']=7;self.add(e,['bossraid-integrity']);self.assertFalse(self.p.report()['proofPass'])
     def test_global_state_loss_fails(self):
         self.add(self.event());e=self.event(2);e['totalDamage']=10;self.add(e);self.assertFalse(self.p.report()['proofPass'])
-    def test_unexpected_output_fails(self):self.add(self.event(),['raid-score-updates','raid-integrity']);self.assertFalse(self.p.report()['proofPass'])
+    def test_unexpected_output_fails(self):self.add(self.event(),['bossraid-score-updates','bossraid-integrity']);self.assertFalse(self.p.report()['proofPass'])
     def test_player_state_loss_fails(self):
         self.add(self.event());e=self.event(2);e['playerDamage']=10;self.add(e);self.assertFalse(self.p.report()['proofPass'])
     def test_stale_snapshot_cannot_pass(self):
