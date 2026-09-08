@@ -25,7 +25,7 @@ kubectl -n flink logs deployment/flink-kubernetes-operator --tail=100
 kubectl -n flink get flinkdeployment raid-score-engine -o yaml
 ```
 
-Check pinned chart versions and CRDs. The broker has an explicit 768 MiB maximum Java heap and 3 GiB container limit; keep these settings when using nested Docker/K3s to avoid automatic heap sizing exceeding the effective memory budget. Kafka uses one combined controller/broker; transaction and offset replication are explicitly 1. The Flink admission webhook is disabled to avoid needing certificate infrastructure on the laptop.
+Check pinned chart versions and CRDs. Script 02 removes only its own `pending-*` Helm releases before retrying, which recovers an interrupted local operator installation. The broker has an explicit 768 MiB maximum Java heap and 3 GiB container limit; keep these settings when using nested Docker/K3s to avoid automatic heap sizing exceeding the effective memory budget. Kafka uses one combined controller/broker; transaction and offset replication are explicitly 1. The Flink admission webhook is disabled to avoid needing certificate infrastructure on the laptop.
 
 ## Lag grows or dashboard disconnects
 

@@ -21,7 +21,7 @@ KUBECONFIG=/tmp/raid-kubeconfig KUBE_CONTEXT=k3d-live-raid ./scripts/open-dashbo
 
 The dashboard is a running Kubernetes application, not a GitHub Pages site. Remote browser access uses the HTTPS deployment instructions below. Its page source is [`apps/raid-dashboard/index.html`](apps/raid-dashboard/index.html).
 
-After `./scripts/01-create-cluster.sh`, all demo scripts automatically load the generated `.runtime/kubeconfig` and `k3d-live-raid` context. Explicit `KUBECONFIG` or `KUBE_CONTEXT` values always take precedence for existing Kubernetes clusters.
+After `./scripts/01-create-cluster.sh`, all demo scripts automatically load the generated `.runtime/kubeconfig` and `k3d-live-raid` context when `KUBE_CONTEXT` is unset. This deliberately overrides a machine-wide inherited `KUBECONFIG`, which is common on K3s hosts. For an existing Kubernetes cluster, set both `KUBECONFIG` and `KUBE_CONTEXT`; the named context takes precedence.
 
 This is a purpose-built audience dashboard: a live pipeline diagram, five selectable presentation phases, throughput trend, boss HP, player leaderboard, latency, Kafka lag, Flink workers and the final integrity verdict. Select a phase to display its explanation; execute the corresponding terminal script to change the live workload. Use [k9s](k9s/README.md) beside it to show Kubernetes recovery. No Grafana installation is required.
 
@@ -163,10 +163,11 @@ Kafka retains 24 hours of history; evidence grows with event count. The verifier
 ```bash
 ./scripts/cleanup.sh             # remove workloads, retain logs/evidence
 ./scripts/cleanup.sh --cluster   # delete the dedicated cluster and its local data
-./scripts/reset-demo.sh          # delete and rebuild the complete local demo from scratch
+./scripts/reset-demo.sh          # rebuild all demo namespaces and data; keep the K3s image cache
+./scripts/reset-demo.sh --cluster # also recreate the K3s node and its image cache
 ```
 
-`reset-demo.sh` is the presenter reset: it deletes only the named local k3d cluster, then recreates Kubernetes, operators, Kafka, images and demo workloads. All Kafka records, checkpoints, verifier evidence and pods are new, so k9s begins with zero pod restarts. It does not target an existing remote Kubernetes cluster.
+`reset-demo.sh` is the presenter reset: it removes and recreates the demo namespaces, operators, Kafka, storage and workloads while retaining the local K3s node and its pulled image cache. Kafka records, checkpoints, verifier evidence and demo pods are new, so the relevant k9s views begin with zero pod restarts. `reset-demo.sh --cluster` additionally recreates the named local K3s node when a full infrastructure wipe is required. Neither mode targets an existing remote Kubernetes cluster.
 
 ## Terminal observability with k9s
 

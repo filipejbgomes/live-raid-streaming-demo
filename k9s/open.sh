@@ -19,4 +19,5 @@ cp "$ROOT/k9s/hotkeys.yaml" "$XDG_DATA_HOME/k9s/hotkeys.yaml"
 if [[ "${1:-}" == info ]]; then exec "$bin" info; fi
 context="${KUBE_CONTEXT:-$(kubectl config current-context)}"
 echo "Opening raid observability in Kubernetes context: $context"
-exec "$bin" --context "$context" --namespace demo --readonly "$@"
+#exec "$bin" --context "$context" --namespace demo --readonly "$@"
+exec "$bin" --context "$context" -A

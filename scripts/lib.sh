@@ -19,9 +19,10 @@ k3d() {
   command "$bin" "$@"
 }
 LOCAL_ENV="$ROOT/.runtime/local-cluster.env"
-# Local setup writes this ignored file. Explicit environment values always win,
-# so remote deployments never accidentally select the local cluster.
-if [[ -z "${KUBECONFIG:-}" && -z "${KUBE_CONTEXT:-}" && -r "$LOCAL_ENV" ]]; then
+# Local setup writes this ignored file. A named context is an explicit remote
+# choice; an inherited KUBECONFIG alone is common on K3s hosts and must not
+# prevent the documented local script sequence from selecting live-raid.
+if [[ -z "${KUBE_CONTEXT:-}" && -r "$LOCAL_ENV" ]]; then
   # shellcheck disable=SC1090
   source "$LOCAL_ENV"
 fi
