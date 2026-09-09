@@ -169,14 +169,6 @@ Kafka retains 24 hours of history; evidence grows with event count. The verifier
 
 `reset-demo.sh` is the presenter reset: it removes and recreates the demo namespaces, operators, Kafka, storage and workloads while retaining the local K3s node and its pulled image cache. Kafka records, checkpoints, verifier evidence and demo pods are new, so the relevant k9s views begin with zero pod restarts. `reset-demo.sh --cluster` additionally recreates the named local K3s node when a full infrastructure wipe is required. Neither mode targets an existing remote Kubernetes cluster.
 
-Before a presentation, use the warm-up script instead of running individual setup steps:
-
-```bash
-./scripts/warmup-demo.sh
-```
-
-It creates a fresh Bossraid, checks Kafka, Flink, dashboard and verifier readiness, confirms the player generator is at zero replicas, then runs the repository validation suite. It finishes only when the dashboard is in `READY` state and prints the browser command. Click **Start boss raid** on the dashboard when the presentation begins.
-
 ## Offline presenter reset
 
 Complete the initial deployment while online. From then on, use only:
