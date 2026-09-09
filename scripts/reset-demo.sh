@@ -33,4 +33,5 @@ step '7/8' 'Creating Kafka and its topics'
 step '8/8' 'Building/importing app images and deploying the live dashboard'
 "$ROOT/scripts/04-build-images.sh"
 "$ROOT/scripts/05-deploy-demo.sh"
-echo "Fresh demo is ready. Run ./scripts/open-dashboard.sh and open http://localhost:${DASHBOARD_PORT:-18080}. All demo pods are newly created, so their k9s restart counts begin at zero. Use reset-demo.sh --cluster only when you also need a fresh K3s node."
+nohup "$ROOT/scripts/open-dashboard.sh" >"$ROOT/.runtime/dashboard-port-forward.log" 2>&1 < /dev/null &
+echo "Fresh demo is ready. Dashboard is starting at http://localhost:${DASHBOARD_PORT:-18080}. All demo pods are newly created, so their k9s restart counts begin at zero. Use reset-demo.sh --cluster only when you also need a fresh K3s node."
