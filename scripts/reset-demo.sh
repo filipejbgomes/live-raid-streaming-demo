@@ -13,10 +13,10 @@ else
   step '1/8' 'Deleting the Flink job while its operator is still running'
   kubectl -n flink delete flinkdeployment --all --ignore-not-found --wait=false
   wait_for_empty flink flinkdeployment 'Flink job'
-  step '2/7' 'Deleting Kafka topics before removing the Kafka cluster'
+  step '2/8' 'Deleting Kafka topics before removing the Kafka cluster'
   kubectl -n kafka delete kafkatopic --all --ignore-not-found --wait=false
   wait_for_empty kafka kafkatopic 'Kafka topics'
-  step '3/7' 'Deleting Kafka after its topics are gone'
+  step '3/8' 'Deleting Kafka after its topics are gone'
   kubectl -n kafka delete kafka,kafkanodepool --all --ignore-not-found --wait=false
   wait_for_empty kafka kafka 'Kafka cluster'
   wait_for_empty kafka kafkanodepool 'Kafka node pool'

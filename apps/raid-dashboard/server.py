@@ -18,6 +18,8 @@ def kube(path,method='GET',body=None):return request_json(API+path,method,body)
 def scale(replicas,message):
     kube('/apis/apps/v1/namespaces/demo/deployments/bossraid-player-generator','PATCH',{'spec':{'replicas':replicas}})
     record('LIVE' if replicas else 'STOPPED',message)
+def generator_replicas():
+    return kube('/apis/apps/v1/namespaces/demo/deployments/bossraid-player-generator').get('spec',{}).get('replicas',0)
 def upgrade():
     try:
         record('UPGRADING','Saving Bossraid state before rules upgrade…')
@@ -34,7 +36,9 @@ def upgrade():
     except Exception as error:record('ACTION FAILED',f'Upgrade failed: {error}')
 def control_action(action):
     if action=='start':scale(2,'Boss raid started with two player groups')
-    elif action=='scale':scale(8,'Player load increased to eight groups')
+    elif action=='scale':
+        replicas=generator_replicas()+1
+        scale(replicas,f'Added 500 configured players: {replicas} player groups are running')
     elif action=='stop':scale(0,'Player generation stopped; processing can drain')
     elif action=='kill-worker':
         pods=kube('/api/v1/namespaces/flink/pods?labelSelector=app%3Dbossraid-score-engine%2Ccomponent%3Dtaskmanager')['items']
@@ -52,7 +56,9 @@ class Handler(SimpleHTTPRequestHandler):
         if host and self.headers.get('X-Forwarded-Proto','').split(',')[0].strip()=='http':
             self.send_response(308);self.send_header('Location','https://'+host+self.path);self.end_headers();return
         try:
-            if self.path=='/metrics-json':data=request_json('http://bossraid-verifier:8080/metrics-json')
+            if self.path=='/metrics-json':
+                data=request_json('http://bossraid-verifier:8080/metrics-json')
+                data['configuredPlayers']=generator_replicas()*500
             elif self.path=='/control-status':
                 with lock:data=dict(control)
             else:return super().do_GET()

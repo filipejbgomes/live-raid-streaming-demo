@@ -30,6 +30,9 @@ def consume():
                 pos=row[0] if row else 0
                 if beginnings[tp]>pos:raise RuntimeError('Kafka retention removed unverified history; reset the entire demo')
                 c.seek(tp,pos)
+            # Kafka and every required topic are reachable. An idle Bossraid is ready
+            # for a presentation even before its first attack arrives.
+            status.update(ready=True,error=None)
         last=0
         while True:
             with lock:
@@ -49,7 +52,7 @@ def consume():
                     for r in records:
                         proof.ingest(tp.topic,tp.partition,r.offset,r.value)
                         if tp.topic=='bossraid-score-updates':
-                            now=time.time();latencies.append(max(0,now*1000-r.value['createdAtEpochMs']))
+                            now=time.time();latencies.append((now,max(0,now*1000-r.value['createdAtEpochMs'])))
                             arrivals.append(now);active[r.value['playerId']]=now
                 proof.db.commit()
                 if batch:status['evidenceRevision']+=1
@@ -125,7 +128,8 @@ def snapshots():
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         with lock:
-            if self.path=='/health':data=dict(ready=status['ready'],error=status['error']);code=200 if status['ready'] else 503
+            if self.path=='/live':data={'alive':True};code=200
+            elif self.path=='/health':data=dict(ready=status['ready'],error=status['error']);code=200 if status['ready'] else 503
             elif self.path=='/metrics-json':
                 data=dict(cached);data.update(status);code=200
                 data.update(snapshotAgeSeconds=round(time.time()-cached_at,1),snapshotRevision=cached_revision)
@@ -133,7 +137,8 @@ class Handler(BaseHTTPRequestHandler):
                 while arrivals and arrivals[0]<now-10:arrivals.popleft()
                 for p in list(active):
                     if active[p]<now-30:del active[p]
-                samples=sorted(latencies)
+                while latencies and latencies[0][0]<now-60:latencies.popleft()
+                samples=sorted(delay for _,delay in latencies)
                 data.update(attacksPerSec=len(arrivals)/10,playersOnline=len(active),
                     latency={f'p{p}':round(samples[min(len(samples)-1,int(len(samples)*p/100))],1) if samples else None for p in (50,95,99)})
                 data['proofPass']=proof_ready(data,status,cached_revision,time.time())
@@ -147,7 +152,9 @@ class Handler(BaseHTTPRequestHandler):
         else:
             self.send_response(404);data={'error':'not found'}
         self.send_header('Content-Type','application/json');self.end_headers();self.wfile.write(json.dumps(data).encode())
+server=ThreadingHTTPServer(('0.0.0.0',8080),Handler)
+threading.Thread(target=server.serve_forever,daemon=True).start()
 threading.Thread(target=snapshots,daemon=True).start()
 threading.Thread(target=consume,daemon=True).start()
 threading.Thread(target=telemetry,daemon=True).start()
-ThreadingHTTPServer(('0.0.0.0',8080),Handler).serve_forever()
+threading.Event().wait()
