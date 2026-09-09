@@ -12,11 +12,14 @@ generator = os.getenv('HOSTNAME', 'generator') + '-' + uuid.uuid4().hex[:12]
 players = int(os.getenv('PLAYERS', '500'))
 rate = int(os.getenv('RATE', '500'))
 ADJECTIVES=('amber','brave','cosmic','daring','ember','frost','golden','lucky','mighty','nimble','rapid','silent','wild','zen')
+MALAYSIAN_STATES=('johor','kedah','kelantan','melaka','pahang','perak','perlis','sabah','sarawak','selangor','terengganu')
+MALAYSIAN_CITIES=('bintulu','cyberjaya','ipoh','kangar','kluang','kuantan','kuching','kulim','miri','muar','putrajaya','sandakan','seremban','sibu','taiping','tawau')
 ANIMALS=('badger','falcon','ferret','fox','gecko','otter','panda','rabbit','raven','tiger','walrus','wolf','yak','zebra')
+PLAYER_PREFIXES=ADJECTIVES+MALAYSIAN_STATES+MALAYSIAN_CITIES
 def player_handle(index):
     """Stable for this player incarnation; the 12-hex suffix keeps handles unique in practice."""
     digest=hashlib.sha256(f'{generator}:{index}'.encode()).digest()
-    return f'@{ADJECTIVES[digest[0]%len(ADJECTIVES)]}_{ANIMALS[digest[1]%len(ANIMALS)]}_{digest[2:8].hex()}'
+    return f'@{PLAYER_PREFIXES[digest[0]%len(PLAYER_PREFIXES)]}_{ANIMALS[digest[1]%len(ANIMALS)]}_{digest[2:8].hex()}'
 producer = KafkaProducer(bootstrap_servers=os.getenv('BOOTSTRAP', 'bossraid-kafka-bootstrap.kafka:9092'),
     enable_idempotence=True, acks='all', linger_ms=10,
     key_serializer=lambda x:x.encode(), value_serializer=lambda x:json.dumps(x).encode())
